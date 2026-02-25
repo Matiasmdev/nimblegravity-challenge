@@ -1,35 +1,70 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import { getCandidateByEmail } from "./services/api";
+import JobList from "./components/JobList";
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const [email, setEmail] = useState("");
+  const [candidate, setCandidate] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleGetCandidate = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await getCandidateByEmail(email);
+
+      setCandidate(data);
+
+    } catch (err) {
+      setError("No se encontró candidato");
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!candidate) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+        <h1 className="text-xl font-bold mb-4">
+          Ingresá tu email
+        </h1>
+
+        <input
+          type="text"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="border p-2"
+        />
+
+        <button
+          onClick={handleGetCandidate}
+          className="bg-blue-500 text-white px-4 py-2 mt-2 rounded"
+        >
+          {loading ? "Buscando..." : "Continuar"}
+        </button>
+
+        {error && (
+          <p className="text-red-500 mt-2">
+            {error}
+          </p>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="min-h-screen bg-gray-100 p-6">
+      <h1 className="text-2xl font-bold mb-4">
+        Bienvenido {candidate.firstName}
+      </h1>
+
+      <JobList candidate={candidate} />
+    </div>
+  );
 }
 
-export default App
+export default App;
